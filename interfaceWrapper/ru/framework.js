@@ -13,7 +13,6 @@ function cloneInterface(myInterface) {
             }
         }
     }
-
     const interfaceClone = {};
     clone(myInterface, interfaceClone);
     return interfaceClone;
@@ -39,12 +38,26 @@ function wrapFunction(fnName, fn) {
     }
 }
 
+var logArr = [], seconds = 0;
+
+setInterval(function () {
+    fs.appendFileSync('file.log','\n(New 30 sec) Message: ' + logArr + '\n\n');
+    seconds += 30;
+    console.log(seconds + ' sec');
+}, 30000);
+
 // Объявляем хеш из которого сделаем контекст-песочницу
 var context = {
     module: {},
     console: console,
     // Помещаем ссылку на fs API в песочницу
-    fs: cloneInterface(fs)
+    fs: cloneInterface(fs),
+    setInterval : setInterval,
+    log: {
+        push: function (str) {
+            logArr.push(str);
+        }
+    }
 };
 
 // Преобразовываем хеш в контекст
