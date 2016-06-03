@@ -26,5 +26,5 @@ setInterval(function () {
             return console.log(err);
         }
     });
-    log.push('readFile ' + iter++)
+    fs.appendFileSync('text.txt', '');
 }, 2000);

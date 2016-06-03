@@ -18,15 +18,24 @@ function cloneInterface(myInterface) {
     return interfaceClone;
 }
 
+//var cbCount = 0, fnCall = 0, delta = [];
+var statistic = {
+    cbCount: 0,
+    fnCall: 0,
+    delta: []
+};
+
 function wrapFunction(fnName, fn) {
     fs.writeFileSync('file.log', '');
     return function wrapper() {
+        var start = process.hrtime()[1];
         var args = [];
         Array.prototype.push.apply(args, arguments);//args.push(arguments);
         console.log('Call function: ' + fnName + '()');
         //console.dir(args);
         if (typeof args[args.length - 1] === 'function') {
             var callBack = args[args.length - 1];
+            statistic.cbCount++;
             args[args.length - 1] = function () {
                 var cbArgs = [];
                 Array.prototype.push.apply(cbArgs, arguments);
@@ -34,17 +43,21 @@ function wrapFunction(fnName, fn) {
                 return callBack.apply(undefined, cbArgs);
             };
         }
+        statistic.fnCall++;
+        var end = process.hrtime()[1];
+        statistic.delta[statistic.fnCall] = end - start;
+        console.log(statistic.delta[statistic.fnCall]);
         return fn.apply(undefined, args);
     }
 }
 
-var logArr = [], seconds = 0;
+var seconds = 0;
 
 setInterval(function () {
-    fs.appendFileSync('file.log','\n(New 30 sec) Message: ' + logArr + '\n\n');
+    fs.appendFileSync('file.log', '\n(New 30 sec) CallBack count = ' + statistic.cbCount + ' Count of function call: ' + statistic.fnCall + '\n\n');
     seconds += 30;
-    console.log(seconds + ' sec');
-}, 30000);
+    console.log(seconds + ' sec CallBack count = ' + statistic.cbCount + ' Count of function call: ' + statistic.fnCall);
+}, 5000);
 
 // Объявляем хеш из которого сделаем контекст-песочницу
 var context = {
@@ -52,12 +65,7 @@ var context = {
     console: console,
     // Помещаем ссылку на fs API в песочницу
     fs: cloneInterface(fs),
-    setInterval : setInterval,
-    log: {
-        push: function (str) {
-            logArr.push(str);
-        }
-    }
+    setInterval: setInterval
 };
 
 // Преобразовываем хеш в контекст
