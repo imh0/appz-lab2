@@ -3,12 +3,22 @@
 var fs = require('fs'),
 vm = require('vm');
 
-function cloneInterface(anInterface) {
-  var clone = {};
-  for (var key in anInterface) {
-    clone[key] = anInterface[key];
+function cloneInterface(myInterface) {
+  function clone(obj, res) {
+    Object.keys(myInterface).forEach((key) => {
+      if (typeof obj === 'Object') {
+       res[key] = {};
+       clone(obj, res[key]);
+      } else {
+        res[key] = obj[key];
+      }
+    });
   }
-  return clone;
+ 
+  const interfaceClone = {};
+  clone(myInterface, interfaceClone);
+ 
+  return interfaceClone;
 }
 
 function wrapFunction(fnName, fn) {
